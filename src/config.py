@@ -22,9 +22,9 @@ class TrainConfig:
 
     # --- Hyperparameters ---
     batch_size: int = 4         # Adjust based on VRAM (2, 4, 8)
-    grad_accum: int = 16        # Effective Batch Size = Batch * Accum
+    grad_accum: int = 2        # Effective Batch Size = Batch * Accum
     learning_rate: float = 5e-5 # T3 is sensitive, keep low
-    num_epochs: int = 75
+    num_epochs: int = 200
 
     # --- Constraints ---
     start_text_token = 255

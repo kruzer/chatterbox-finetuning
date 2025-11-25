@@ -92,8 +92,8 @@ def main():
         learning_rate=cfg.learning_rate,
         num_train_epochs=cfg.num_epochs,
         save_strategy="steps",
-        save_steps=100,
-        logging_steps=10,
+        save_steps=500,
+        logging_strategy="epoch",
         remove_unused_columns=False, # Required for our custom wrapper
         dataloader_num_workers=2,    
         report_to=["tensorboard"],

@@ -87,6 +87,11 @@ class ChatterboxTrainerWrapper(torch.nn.Module):
         
         super().__init__()
         self.t3 = t3_model
+        
+        if hasattr(t3_model.hp, 'speech_cond_prompt_len'):
+            self.prompt_token_len = t3_model.hp.speech_cond_prompt_len
+        else:
+            self.prompt_token_len = 150 
 
 
     def forward(
@@ -99,11 +104,14 @@ class ChatterboxTrainerWrapper(torch.nn.Module):
             prompt_tokens):
 
         device = text_tokens.device
+        batch_size = text_tokens.size(0)
+        
+        emotion_adv = 0.5 * torch.ones(batch_size, 1, 1).to(device)
         
         t3_cond = T3Cond(
             speaker_emb=speaker_emb,
             cond_prompt_speech_tokens=prompt_tokens,
-            emotion_adv=None
+            emotion_adv=emotion_adv
         )
 
         # Forward Pass
@@ -144,4 +152,4 @@ class ChatterboxTrainerWrapper(torch.nn.Module):
         total_loss = loss_text + loss_speech
 
 
-        return (total_loss, out)
+        return (total_loss, None)
