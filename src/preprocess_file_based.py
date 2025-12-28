@@ -99,8 +99,14 @@ def preprocess_dataset_file_based(config, tts_engine: ChatterboxTTS):
 
 
             clean_text = punc_norm(raw_text)
+            
             # Tokenizer
-            text_tokens = tts_engine.tokenizer.text_to_tokens(clean_text).squeeze(0).cpu()
+            if config.is_turbo:
+                token_output = tts_engine.tokenizer(clean_text, return_tensors="pt")
+                text_tokens = token_output.input_ids[0]
+            
+            else:
+                text_tokens = tts_engine.tokenizer.text_to_tokens(clean_text).squeeze(0).cpu()
 
             # --- 5. SAVING ---
             # We keep the file name: ID.pt

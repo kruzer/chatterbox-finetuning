@@ -172,8 +172,8 @@ class ChatterboxTurboTTS:
         tokenizer = AutoTokenizer.from_pretrained(ckpt_dir)
         if tokenizer.pad_token is None:
             tokenizer.pad_token = tokenizer.eos_token
-        if len(tokenizer) != 50276:
-            print(f"WARNING: Tokenizer len {len(tokenizer)} != 50276")
+        #if len(tokenizer) != 50276:
+        #    print(f"WARNING: Tokenizer len {len(tokenizer)} != 50276")
 
         conds = None
         builtin_voice = ckpt_dir / "conds.pt"

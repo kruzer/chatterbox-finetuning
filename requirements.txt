@@ -13,3 +13,5 @@ pandas
 safetensors
 tensorboard
 omegaconf
+hf_transfer
+pyloudnorm

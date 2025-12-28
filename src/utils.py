@@ -1,4 +1,5 @@
 import logging
+import os
 import sys
 import torch
 import torchaudio
@@ -102,3 +103,62 @@ def trim_silence_with_vad(audio_waveform: np.ndarray, sample_rate: int) -> np.nd
     except Exception as e:
         print(f"VAD trimming failed: {e}")
         return audio_waveform
+    
+    
+    
+def check_pretrained_models(model_dir="pretrained_models", mode="chatterbox"):
+    """Checks for the existence of the necessary model files. """
+
+    if mode == "chatterbox_turbo":
+        required_files = [
+            "ve.safetensors",
+            "t3_turbo_v1.safetensors",
+            "s3gen_meanflow.safetensors",
+            "conds.pt",
+            "vocab.json",
+            "added_tokens.json",
+            "special_tokens_map.json",
+            "tokenizer_config.json",
+            "merges.txt",
+            "grapheme_mtl_merged_expanded_v1.json"
+        ]
+
+    else:
+
+        required_files = [
+            "ve.safetensors",
+            "t3_cfg.safetensors",
+            "s3gen.safetensors",
+            "conds.pt",
+            "tokenizer.json"
+        ]
+
+
+    missing_files = []
+
+
+    if not os.path.exists(model_dir):
+        print(f"\nERROR: '{model_dir}' folder doesn't exist!")
+        missing_files = required_files
+        
+    else:
+
+        for filename in required_files:
+            file_path = os.path.join(model_dir, filename)
+            if not os.path.exists(file_path):
+                missing_files.append(filename)
+
+
+    if missing_files:
+        print("\n" + "!" * 60)
+        print("ATTENTION: The following model files could not be found:")
+        for f in missing_files:
+            print(f"   - {f}")
+        
+        print("\nPlease run the following command to download the models:")
+        print(f" python setup.py")
+        print("!" * 60 + "\n")
+        return False
+    
+    print(f"All necessary models are available under '{model_dir}'.")
+    return True
