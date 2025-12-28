@@ -1,6 +1,7 @@
 import torch
 import torch.nn.functional as F
 from src.chatterbox_.models.t3.modules.cond_enc import T3Cond
+from src.config import TrainConfig
 from src.utils import setup_logger
 
 
@@ -88,6 +89,8 @@ class ChatterboxTrainerWrapper(torch.nn.Module):
         super().__init__()
         self.t3 = t3_model
         
+        self.cfg = TrainConfig()
+        
         if hasattr(t3_model.hp, 'speech_cond_prompt_len'):
             self.prompt_token_len = t3_model.hp.speech_cond_prompt_len
         else:
@@ -133,21 +136,28 @@ class ChatterboxTrainerWrapper(torch.nn.Module):
 
         IGNORE_ID = -100
 
-
         speech_logits = out.speech_logits[:, :-1, :].transpose(1, 2)
         speech_labels = speech_tokens[:, 1:] 
         
         curr_speech_len = speech_labels.size(1)
         mask_speech_pad = torch.arange(curr_speech_len, device=device)[None, :] >= (speech_token_lens[:, None] - 1)
 
-        actual_prompt_len = prompt_tokens.size(1) 
-        mask_prompt = torch.arange(curr_speech_len, device=device)[None, :] < actual_prompt_len
-        
-        speech_labels = speech_labels.masked_fill(mask_speech_pad | mask_prompt, IGNORE_ID)
+        if self.cfg.is_turbo == True:
+            speech_labels = speech_labels.masked_fill(mask_speech_pad, IGNORE_ID)
+            
+        else:
+            
+            #mask_prompt = torch.arange(curr_speech_len, device=device)[None, :] < self.prompt_token_len
+            
+            actual_prompt_len = prompt_tokens.size(1)
+            mask_prompt = torch.arange(curr_speech_len, device=device)[None, :] < actual_prompt_len
+            
+            speech_labels = speech_labels.masked_fill(mask_speech_pad | mask_prompt, IGNORE_ID)
+            
+            
         loss_speech = F.cross_entropy(speech_logits, speech_labels, ignore_index=IGNORE_ID)
 
 
-        
         text_logits = out.text_logits[:, :-1, :].transpose(1, 2)
         text_labels = text_tokens[:, 1:]
             
