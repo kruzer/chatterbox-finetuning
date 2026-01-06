@@ -462,7 +462,8 @@ class T3(nn.Module):
         generated_speech_tokens.append(next_speech_token)
         current_speech_token = next_speech_token
 
-        for _ in tqdm(range(max_gen_len)):
+        #for _ in tqdm(range(max_gen_len)):
+        for _ in range(max_gen_len): 
             current_speech_embed = self.speech_emb(current_speech_token)
 
             llm_outputs = self.tfmr(

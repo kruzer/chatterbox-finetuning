@@ -39,7 +39,7 @@ def load_vad_model():
     
     try:
         
-        print("Loading Silero VAD model...")
+        #print("Loading Silero VAD model...")
         
         model, utils = torch.hub.load(
             repo_or_dir='snakers4/silero-vad',
@@ -51,7 +51,7 @@ def load_vad_model():
         _GET_SPEECH_TIMESTAMPS = utils[0]
         _VAD_MODEL = model
         
-        print("Silero VAD loaded.")
+        #print("Silero VAD loaded.")
         
         return _VAD_MODEL, _GET_SPEECH_TIMESTAMPS
     

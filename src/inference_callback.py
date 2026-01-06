@@ -129,19 +129,23 @@ class InferenceCallback(TrainerCallback):
 
 
         tts_engine.t3 = new_t3
-        tts_engine.to(device)
-        tts_engine.eval()
+        
+        tts_engine.t3.to(device).eval()
+        tts_engine.s3gen.to(device).eval()
+        tts_engine.ve.to(device).eval()
+
+        tts_engine.device = device
         
 
         params = {
             "temperature": 0.8,
-            "exaggeration": 0.5 if is_turbo else 1.2,
             "repetition_penalty": 1.2,
         }
 
 
         if not is_turbo:
-            params["cfg_weight"] = 0.5
+            params["cfg_weight"] = 0.2
+            params["exaggeration"]= 1.2,
 
 
         with torch.no_grad():

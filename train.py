@@ -139,14 +139,14 @@ def main():
         learning_rate=cfg.learning_rate,
         num_train_epochs=cfg.num_epochs,
         save_strategy="steps",
-        save_steps=500,
+        save_steps=cfg.save_steps,
         logging_strategy="epoch",
         remove_unused_columns=False, # Required for our custom wrapper
-        dataloader_num_workers=4,    
+        dataloader_num_workers=cfg.dataloader_num_workers,    
         report_to=["tensorboard"],
         fp16=False,
         bf16=True,
-        save_total_limit=2,
+        save_total_limit=cfg.save_total_limit,
         gradient_checkpointing=True, # This setting theoretically reduces VRAM usage by 60%.
     )
 

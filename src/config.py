@@ -21,7 +21,7 @@ class TrainConfig:
     output_dir: str = "./chatterbox_output"
     
     is_inference = False
-    inference_prompt_path: str = "./speaker_reference/en_f1.flac"
+    inference_prompt_path: str = "./speaker_reference/2.wav"
     inference_test_text: str = "Merhaba, sesimi geliştirmem oldukça uzun zaman aldı ve şimdi sahip olduğuma göre, sessiz kalmayacağım."
 
 
@@ -42,6 +42,10 @@ class TrainConfig:
     grad_accum: int = 2        # Effective Batch Size = Batch * Accum
     learning_rate: float = 5e-5 # T3 is sensitive, keep low
     num_epochs: int = 250
+    
+    save_steps: int = 1000
+    save_total_limit: int = 2
+    dataloader_num_workers: int = 4
 
     # --- Constraints ---
     start_text_token = 255
