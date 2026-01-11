@@ -28,6 +28,7 @@ def preprocess_dataset_ljspeech(config, tts_engine: ChatterboxTTS):
 
     success_count = 0
 
+    SPEECH_STOP_ID = getattr(tts_engine.t3.hp, 'stop_speech_token', 6562)
     for idx, row in tqdm(data.iterrows(), total=len(data)):
         
         try:
@@ -63,11 +64,13 @@ def preprocess_dataset_ljspeech(config, tts_engine: ChatterboxTTS):
 
 
                 s_tokens, _ = tts_engine.s3gen.tokenizer(wav.unsqueeze(0))
-                speech_tokens = s_tokens.squeeze().cpu()
+                raw_speech_tokens = s_tokens.squeeze().cpu()
+                
+                stop_speech_tensor = torch.tensor([SPEECH_STOP_ID], dtype=raw_speech_tokens.dtype)
+                speech_tokens = torch.cat([raw_speech_tokens, stop_speech_tensor], dim=0)
 
 
                 prompt_samples = int(config.prompt_duration * S3_SR)
-                
                 if wav.shape[1] < prompt_samples:
                     prompt_wav = torch.nn.functional.pad(wav, (0, prompt_samples - wav.shape[1]))
                     
@@ -82,10 +85,15 @@ def preprocess_dataset_ljspeech(config, tts_engine: ChatterboxTTS):
             
             clean_text = punc_norm(raw_text)
 
-            # Tokenizer
             if config.is_turbo:
                 token_output = tts_engine.tokenizer(clean_text, return_tensors="pt")
-                text_tokens = token_output.input_ids[0].cpu()
+                raw_text_tokens = token_output.input_ids[0].cpu()
+                
+                if tts_engine.tokenizer.eos_token_id is not None:
+                    text_eos = torch.tensor([tts_engine.tokenizer.eos_token_id], dtype=raw_text_tokens.dtype)
+                    text_tokens = torch.cat([raw_text_tokens, text_eos], dim=0)
+                else:
+                    text_tokens = raw_text_tokens
             
             else:
                 text_tokens = tts_engine.tokenizer.text_to_tokens(clean_text).squeeze(0).cpu()
