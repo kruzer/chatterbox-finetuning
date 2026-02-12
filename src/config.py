@@ -35,14 +35,14 @@ class TrainConfig:
     new_vocab_size: int = 52260 if is_turbo else 2454 
 
     # --- Hyperparameters ---
-    batch_size: int = 2         # RTX 3060 12GB (H100: 40)
-    grad_accum: int = 8         # effective batch = 32
+    batch_size: int = 32        # A100 80GB
+    grad_accum: int = 1         # effective batch = 32
     learning_rate: float = 1e-5 # T3 is sensitive, keep low
     num_epochs: int = 100
 
     save_steps: int = 500
     save_total_limit: int = 3
-    dataloader_num_workers: int = 4  # RTX 3060 (H100: 8)
+    dataloader_num_workers: int = 8  # A100 80GB
 
     # --- Constraints ---
     start_text_token = 255
