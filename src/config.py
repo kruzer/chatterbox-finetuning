@@ -19,7 +19,7 @@ class TrainConfig:
     output_dir: str = "./chatterbox_output"
 
     is_inference = True  # Enable inference callback to generate samples during training
-    inference_prompt_path: str = "./speaker_reference/2.wav"
+    inference_prompt_path: str = "./speaker_reference/1984.wav"
     inference_test_text: str = "Dzień dobry, witam w polskim systemie syntezy mowy."  # Polish test text
 
 
