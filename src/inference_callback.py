@@ -1,3 +1,4 @@
+import gc
 import os
 import torch
 import soundfile as sf
@@ -164,8 +165,10 @@ class InferenceCallback(TrainerCallback):
         logger.info(f"Example saved: {output_path}")
         
         
+        del wav, wav_np, trimmed_wav
         del tts_engine
         del new_t3
         del state_dict
         del clean_state_dict
+        gc.collect()
         torch.cuda.empty_cache()
