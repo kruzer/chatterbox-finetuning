@@ -25,7 +25,7 @@ class TrainConfig:
 
     ljspeech = False # Set True if the dataset format is ljspeech, and False if it's file-based.
     json_format = True # Set True if the dataset format is json, and False if it's file-based or ljspeech.
-    preprocess = True  # If you've already done preprocessing once, set it to false.
+    preprocess = False # If you've already done preprocessing once, set it to false.
     is_turbo: bool = True # Set True if you're training Turbo, False if you're training Normal.
 
     # --- Vocabulary ---
@@ -35,14 +35,14 @@ class TrainConfig:
     new_vocab_size: int = 52260 if is_turbo else 2454 
 
     # --- Hyperparameters ---
-    batch_size: int = 40        # H100 FULL POWER (was 16, underutilized!)
-    grad_accum: int = 1         # H100 optimized
+    batch_size: int = 2         # RTX 3060 12GB (H100: 40)
+    grad_accum: int = 8         # effective batch = 32
     learning_rate: float = 1e-5 # T3 is sensitive, keep low
     num_epochs: int = 100
 
-    save_steps: int = 500       # More frequent checkpoints (was 1000)
-    save_total_limit: int = 3   # Keep more checkpoints
-    dataloader_num_workers: int = 8  # H100 has more CPU cores
+    save_steps: int = 500
+    save_total_limit: int = 3
+    dataloader_num_workers: int = 4  # RTX 3060 (H100: 8)
 
     # --- Constraints ---
     start_text_token = 255
