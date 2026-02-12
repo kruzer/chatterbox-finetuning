@@ -7,7 +7,7 @@ from safetensors.torch import save_file
 # Fix for PyTorch 2.6 checkpoint RNG state loading
 import torch.serialization
 import numpy as np
-torch.serialization.add_safe_globals([np.core.multiarray._reconstruct, np.ndarray])
+torch.serialization.add_safe_globals([np.core.multiarray._reconstruct, np.ndarray, np.dtype])
 
 from src.config import TrainConfig
 from src.dataset import ChatterboxDataset, data_collator
