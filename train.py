@@ -4,10 +4,14 @@ import torch
 from transformers import Trainer, TrainingArguments
 from safetensors.torch import save_file
 
-# Fix for PyTorch 2.6 checkpoint RNG state loading
-import torch.serialization
+# Fix for PyTorch 2.6: torch.load weights_only=True breaks RNG state loading
+# (transformers saves RNG state with numpy arrays; monkey-patch to use weights_only=False)
 import numpy as np
-torch.serialization.add_safe_globals([np.core.multiarray._reconstruct, np.ndarray, np.dtype])
+_orig_torch_load = torch.load
+def _torch_load_compat(f, *args, **kwargs):
+    kwargs.setdefault('weights_only', False)
+    return _orig_torch_load(f, *args, **kwargs)
+torch.load = _torch_load_compat
 
 from src.config import TrainConfig
 from src.dataset import ChatterboxDataset, data_collator
