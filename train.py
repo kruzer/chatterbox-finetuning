@@ -4,6 +4,11 @@ import torch
 from transformers import Trainer, TrainingArguments
 from safetensors.torch import save_file
 
+# Fix for PyTorch 2.6 checkpoint RNG state loading
+import torch.serialization
+import numpy as np
+torch.serialization.add_safe_globals([np.core.multiarray._reconstruct, np.ndarray])
+
 from src.config import TrainConfig
 from src.dataset import ChatterboxDataset, data_collator
 from src.model import resize_and_load_t3_weights, ChatterboxTrainerWrapper
@@ -159,7 +164,20 @@ def main():
     )
 
     logger.info("Starting Training Loop...")
-    trainer.train()
+
+    # Smart resume: check if checkpoint exists
+    checkpoint_dirs = [d for d in os.listdir(cfg.output_dir)
+                      if d.startswith("checkpoint-") and os.path.isdir(os.path.join(cfg.output_dir, d))]
+
+    if checkpoint_dirs:
+        # Sort by step number and get the latest
+        checkpoint_dirs.sort(key=lambda x: int(x.split("-")[1]))
+        latest_checkpoint = os.path.join(cfg.output_dir, checkpoint_dirs[-1])
+        logger.info(f"Found checkpoint: {latest_checkpoint} - resuming training...")
+        trainer.train(resume_from_checkpoint=latest_checkpoint)
+    else:
+        logger.info("No checkpoint found - starting training from scratch...")
+        trainer.train()
 
 
     # 8. SAVE FINAL MODEL

@@ -5,12 +5,13 @@ from pathlib import Path
 
 import librosa
 import torch
-import perth
 import pyloudnorm as ln
 import numpy as np
 from safetensors.torch import load_file
 from huggingface_hub import snapshot_download
 from transformers import AutoTokenizer
+
+# Watermarking disabled - not needed for training
 
 from .models.t3 import T3
 from .models.s3tokenizer import S3_SR
@@ -127,7 +128,7 @@ class ChatterboxTurboTTS:
         self.tokenizer = tokenizer
         self.device = device
         self.conds = conds
-        self.watermarker = perth.PerthImplicitWatermarker()
+        self.watermarker = None  # Watermarking disabled
 
     @classmethod
     def from_local(cls, ckpt_dir, device) -> 'ChatterboxTurboTTS':
@@ -181,6 +182,37 @@ class ChatterboxTurboTTS:
             conds = Conditionals.load(builtin_voice, map_location=map_location).to(device)
 
         return cls(t3, s3gen, ve, tokenizer, device, conds=conds)
+
+    @classmethod
+    def from_finetuned(cls, ckpt_dir, finetuned_path, device, new_vocab_size=52260) -> 'ChatterboxTurboTTS':
+        """Load fine-tuned model. Simple one-liner for inference after training."""
+        from safetensors.torch import load_file as sf_load
+        from src.chatterbox_.models.t3.t3 import T3
+
+        # Load base model (ve, s3gen, tokenizer)
+        tts = cls.from_local(ckpt_dir, device=device)
+
+        # Build new T3 with extended vocab
+        t3_config = tts.t3.hp
+        t3_config.text_tokens_dict_size = new_vocab_size
+        new_t3 = T3(hp=t3_config)
+        if hasattr(new_t3.tfmr, "wte"):
+            del new_t3.tfmr.wte
+
+        # Load fine-tuned weights
+        state_dict = sf_load(finetuned_path)
+        clean_sd = {}
+        for k, v in state_dict.items():
+            k = k.replace("module.", "")
+            if k.startswith("t3."):
+                clean_sd[k.replace("t3.", "")] = v
+            elif not any(x in k for x in ["s3gen", "ve.", "tokenizer"]):
+                clean_sd[k] = v
+
+        new_t3.load_state_dict(clean_sd, strict=False)
+        new_t3.to(device).eval()
+        tts.t3 = new_t3
+        return tts
 
     @classmethod
     def from_pretrained(cls, device) -> 'ChatterboxTurboTTS':

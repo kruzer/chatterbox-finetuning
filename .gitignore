@@ -205,3 +205,14 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+PolishTTSDataset/
+WolneLekturyDataset
+preprocess/
+chatterbox_output/
+pretrained_models/
+preprocessing_log.txt
+MyTTSDataset/wavs/
+speaker_reference/
+*.swp
+*.swo

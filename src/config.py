@@ -5,31 +5,28 @@ class TrainConfig:
     # --- Paths ---
     # Directory where setup.py downloaded the files
     model_dir: str = "./pretrained_models"
-    
+
     # Path to your metadata CSV (Format: ID|RawText|NormText)
     csv_path: str = "./MyTTSDataset/metadata.csv"
-    metadata_path: str = "./metadata.json"
-    
+    metadata_path: str = "./WolneLekturyDataset/metadata.json"
+
     # Directory containing WAV files
-    wav_dir: str = "./MyTTSDataset/wavs"
-    #wav_dir: str = "./FileBasedDataset"
-    
-    preprocessed_dir = "./MyTTSDataset/preprocess"
-    #preprocessed_dir = "./FileBasedDataset/preprocess"
+    wav_dir: str = "./WolneLekturyDataset/wavs"
+
+    preprocessed_dir = "./preprocess"  # Local storage - fast I/O!
     
     # Output directory for the finetuned model
     output_dir: str = "./chatterbox_output"
-    
-    is_inference = False
+
+    is_inference = True  # Enable inference callback to generate samples during training
     inference_prompt_path: str = "./speaker_reference/2.wav"
-    inference_test_text: str = "Merhaba, sesimi geliştirmem oldukça uzun zaman aldı ve şimdi sahip olduğuma göre, sessiz kalmayacağım."
+    inference_test_text: str = "Dzień dobry, witam w polskim systemie syntezy mowy."  # Polish test text
 
 
-    ljspeech = True # Set True if the dataset format is ljspeech, and False if it's file-based.
-    json_format = False # Set True if the dataset format is json, and False if it's file-based or ljspeech.
-    preprocess = True # If you've already done preprocessing once, set it to false.
-    
-    is_turbo: bool = False # Set True if you're training Turbo, False if you're training Normal.
+    ljspeech = False # Set True if the dataset format is ljspeech, and False if it's file-based.
+    json_format = True # Set True if the dataset format is json, and False if it's file-based or ljspeech.
+    preprocess = True  # If you've already done preprocessing once, set it to false.
+    is_turbo: bool = True # Set True if you're training Turbo, False if you're training Normal.
 
     # --- Vocabulary ---
     # The size of the NEW vocabulary (from tokenizer.json)
@@ -38,14 +35,14 @@ class TrainConfig:
     new_vocab_size: int = 52260 if is_turbo else 2454 
 
     # --- Hyperparameters ---
-    batch_size: int = 4         # Adjust based on VRAM (2, 4, 8)
-    grad_accum: int = 2        # Effective Batch Size = Batch * Accum
+    batch_size: int = 40        # H100 FULL POWER (was 16, underutilized!)
+    grad_accum: int = 1         # H100 optimized
     learning_rate: float = 1e-5 # T3 is sensitive, keep low
     num_epochs: int = 100
-    
-    save_steps: int = 1000
-    save_total_limit: int = 2
-    dataloader_num_workers: int = 4
+
+    save_steps: int = 500       # More frequent checkpoints (was 1000)
+    save_total_limit: int = 3   # Keep more checkpoints
+    dataloader_num_workers: int = 8  # H100 has more CPU cores
 
     # --- Constraints ---
     start_text_token = 255

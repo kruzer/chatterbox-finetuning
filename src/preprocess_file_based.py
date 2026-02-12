@@ -142,13 +142,15 @@ def preprocess_dataset_file_based(config, tts_engine: ChatterboxTTS):
 if __name__ == "__main__":
 
     cfg = TrainConfig()
-    
+
     if cfg.is_turbo:
         EngineClass = ChatterboxTurboTTS
     else:
         EngineClass = ChatterboxTTS
-    
-    logger.info(f"{EngineClass} engine starting...")
-    tts_engine = EngineClass.from_local(cfg.model_dir, device="cpu")
-    
+
+    # Auto-detect device (GPU if available, otherwise CPU)
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+    logger.info(f"{EngineClass} engine starting on device: {device}...")
+    tts_engine = EngineClass.from_local(cfg.model_dir, device=device)
+
     preprocess_dataset_file_based(cfg, tts_engine)

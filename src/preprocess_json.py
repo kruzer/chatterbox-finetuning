@@ -53,11 +53,16 @@ def preprocess_dataset_json_based(config, tts_engine: ChatterboxTTS):
 
             file_id = item.get("id")
             raw_text = item.get("text", "")
-            
+
             if not file_id or not raw_text:
                 logger.warning(f"Skipping item with missing id or text")
                 continue
-            
+
+            # Skip if already preprocessed
+            save_path = os.path.join(config.preprocessed_dir, f"{file_id}.pt")
+            if os.path.exists(save_path):
+                success_count += 1
+                continue
 
             wav_path = os.path.join(config.wav_dir, f"{file_id}.wav")
             
@@ -112,37 +117,66 @@ def preprocess_dataset_json_based(config, tts_engine: ChatterboxTTS):
             
             else:
                 text_tokens = tts_engine.tokenizer.text_to_tokens(clean_text).squeeze(0).cpu()
-            
-            save_path = os.path.join(config.preprocessed_dir, f"{file_id}.pt")
-            
+
+            # save_path already defined above for skip check
             torch.save({
                 "speech_tokens": speech_tokens,
                 "speaker_emb": speaker_emb,
                 "prompt_tokens": prompt_tokens,
                 "text_tokens": text_tokens,
             }, save_path)
-            
+
             success_count += 1
 
-            
+            # Periodic verification dla Drive (co 100 plików)
+            if success_count % 100 == 0:
+                # Sprawdź czy ostatni plik naprawdę istnieje
+                if os.path.exists(save_path):
+                    file_size = os.path.getsize(save_path)
+                    logger.info(f"✓ Checkpoint: {success_count} files processed, last file: {file_size} bytes")
+                else:
+                    logger.warning(f"⚠ Warning: File {save_path} was saved but doesn't exist! Drive sync issue?")
+
         except Exception as e:
             logger.error(f"Error ({item.get('id', 'unknown')}): {e}")
             continue
-    
+
     logger.info(f"Preprocessing completed! Success: {success_count}/{len(metadata)}")
+
+    # FINAL VERIFICATION
+    logger.info(f"🔍 Final verification - counting .pt files...")
+    import glob
+    import time
+    time.sleep(3)  # Wait for Drive sync
+
+    pt_files = glob.glob(os.path.join(config.preprocessed_dir, "*.pt"))
+    pt_count = len(pt_files)
+
+    logger.info(f"📊 Verification results:")
+    logger.info(f"   Expected: {success_count} files")
+    logger.info(f"   Found: {pt_count} .pt files")
+
+    if pt_count == success_count:
+        logger.info(f"✅ VERIFICATION PASSED - All files saved correctly!")
+    else:
+        logger.warning(f"⚠️ VERIFICATION FAILED - Missing {success_count - pt_count} files!")
+        logger.warning(f"   This may be a Drive sync issue. Wait 30s and check again:")
+        logger.warning(f"   !ls ./MyTTSDataset/preprocess/*.pt | wc -l")
     
     
 
 if __name__ == "__main__":
 
     cfg = TrainConfig()
-    
+
     if cfg.is_turbo:
         EngineClass = ChatterboxTurboTTS
     else:
         EngineClass = ChatterboxTTS
-    
-    logger.info(f"{EngineClass} engine starting...")
-    tts_engine = EngineClass.from_local(cfg.model_dir, device="cpu")
-    
+
+    # Auto-detect device (GPU if available, otherwise CPU)
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+    logger.info(f"{EngineClass} engine starting on device: {device}...")
+    tts_engine = EngineClass.from_local(cfg.model_dir, device=device)
+
     preprocess_dataset_json_based(cfg, tts_engine)
