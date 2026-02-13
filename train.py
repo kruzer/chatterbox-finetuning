@@ -167,6 +167,7 @@ def main():
         bf16=True,
         save_total_limit=cfg.save_total_limit,
         gradient_checkpointing=True, # This setting theoretically reduces VRAM usage by 60%.
+        lr_scheduler_type="cosine",
         eval_strategy="steps",
         eval_steps=cfg.save_steps,
         per_device_eval_batch_size=cfg.batch_size,
