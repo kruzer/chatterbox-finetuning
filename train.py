@@ -149,7 +149,8 @@ def main():
         num_train_epochs=cfg.num_epochs,
         save_strategy="steps",
         save_steps=cfg.save_steps,
-        logging_strategy="epoch",
+        logging_strategy="steps",
+        logging_steps=50,
         remove_unused_columns=False, # Required for our custom wrapper
         dataloader_num_workers=cfg.dataloader_num_workers,    
         report_to=["tensorboard"],
