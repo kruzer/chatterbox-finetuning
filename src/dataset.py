@@ -11,19 +11,22 @@ logger = setup_logger(__name__)
 
 
 class ChatterboxDataset(Dataset):
-    
-    def __init__(self, config):
+
+    def __init__(self, config, files=None):
         self.cfg = config
         self.preprocessed_dir = config.preprocessed_dir
-        
+
         if not os.path.exists(self.preprocessed_dir):
             raise FileNotFoundError(f"Preprocessing folder not found: {self.preprocessed_dir}.")
-            
-        self.files = [f for f in os.listdir(self.preprocessed_dir) if f.endswith(".pt")]
-        
+
+        if files is not None:
+            self.files = files
+        else:
+            self.files = [f for f in os.listdir(self.preprocessed_dir) if f.endswith(".pt")]
+
         if len(self.files) == 0:
             raise RuntimeError(f"There are no .pt files in the folder: {self.preprocessed_dir}")
-            
+
         logger.info(f"Dataset loaded. Total sample: {len(self.files)}")
 
         self.sot_token = config.start_text_token 

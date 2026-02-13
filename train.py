@@ -130,7 +130,16 @@ def main():
         
     # 6. DATASET & WRAPPER
     logger.info("Initializing Dataset...")
-    train_ds = ChatterboxDataset(cfg)
+    all_files = sorted([f for f in os.listdir(cfg.preprocessed_dir) if f.endswith(".pt")])
+    import random
+    random.seed(42)
+    random.shuffle(all_files)
+    split_idx = int(len(all_files) * (1 - cfg.eval_split))
+    train_files = all_files[:split_idx]
+    eval_files = all_files[split_idx:]
+    logger.info(f"Split: {len(train_files)} train, {len(eval_files)} eval ({cfg.eval_split*100:.0f}%)")
+    train_ds = ChatterboxDataset(cfg, files=train_files)
+    eval_ds = ChatterboxDataset(cfg, files=eval_files)
     
     
     trainer_callbacks = []
@@ -158,12 +167,16 @@ def main():
         bf16=True,
         save_total_limit=cfg.save_total_limit,
         gradient_checkpointing=True, # This setting theoretically reduces VRAM usage by 60%.
+        eval_strategy="steps",
+        eval_steps=cfg.save_steps,
+        per_device_eval_batch_size=cfg.batch_size,
     )
 
     trainer = Trainer(
         model=model_wrapper,
         args=training_args,
         train_dataset=train_ds,
+        eval_dataset=eval_ds,
         data_collator=data_collator,
         callbacks=trainer_callbacks
     )

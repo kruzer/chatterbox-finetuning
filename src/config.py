@@ -41,6 +41,7 @@ class TrainConfig:
 
     save_steps: int = 200       # gęstsze snapshoty
     save_total_limit: int = 30  # zachowaj wszystkie checkpointy
+    eval_split: float = 0.05   # 5% danych na walidację
     dataloader_num_workers: int = 8  # A100 80GB
 
     # --- Constraints ---
