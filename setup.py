@@ -178,17 +178,21 @@ def main():
         download_file(url, dest_path)
 
     if cfg.is_turbo:
-        new_vocab_size = merge_and_save_turbo_tokenizer()
-        if new_vocab_size > 0:
-            
-            #test_merge_tokenizer_process(DEST_DIR)
+        # Use base GPT-2 tokenizer (50276) without multilingual merge.
+        # Polish chars are handled via GPT-2 byte-level BPE.
+        print("\n--- Saving base GPT-2 tokenizer (no multilingual merge) ---")
+        try:
+            base_tokenizer = AutoTokenizer.from_pretrained("gpt2-medium")
+            base_tokenizer.save_pretrained(DEST_DIR)
+            print(f"Base tokenizer saved to '{DEST_DIR}/' (vocab size: {len(base_tokenizer)})")
+        except Exception as e:
+            print(f"ERROR saving tokenizer: {e}")
 
-            print("\n" + "="*60)
-            print("INSTALLATION COMPLETE (CHATTERBOX-TURBO MODE)")
-            print("All models are set up in 'pretrained_models/' folder.")
-            print(f"Please update the 'new_vocab_size' value in the 'src/config.py' file")
-            print(f"to: {new_vocab_size}")
-            print("="*60 + "\n")
+        print("\n" + "="*60)
+        print("INSTALLATION COMPLETE (CHATTERBOX-TURBO MODE)")
+        print("All models are set up in 'pretrained_models/' folder.")
+        print(f"Using base GPT-2 tokenizer (vocab size: 50257, T3 embedding: 50276)")
+        print("="*60 + "\n")
 
     else:
         print("\nINSTALLATION COMPLETE (CHATTERBOX-TTS MOD)")
