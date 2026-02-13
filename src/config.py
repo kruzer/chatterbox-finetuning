@@ -35,13 +35,13 @@ class TrainConfig:
     new_vocab_size: int = 52260 if is_turbo else 2454 
 
     # --- Hyperparameters ---
-    batch_size: int = 96        # A100 80GB (~43% VRAM steady-state)
-    grad_accum: int = 1         # effective batch = 96
-    learning_rate: float = 1e-5 # T3 is sensitive, keep low
-    num_epochs: int = 100
+    batch_size: int = 32        # łagodniejsze gradienty
+    grad_accum: int = 2         # effective batch = 64
+    learning_rate: float = 3e-6 # wolniejsze, stabilniejsze (było 1e-5)
+    num_epochs: int = 30        # peak powinien być epoka 15-25
 
-    save_steps: int = 500
-    save_total_limit: int = 3
+    save_steps: int = 200       # gęstsze snapshoty
+    save_total_limit: int = 30  # zachowaj wszystkie checkpointy
     dataloader_num_workers: int = 8  # A100 80GB
 
     # --- Constraints ---
