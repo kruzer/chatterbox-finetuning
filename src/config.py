@@ -12,7 +12,7 @@ class GPU(Enum):
 _GPU_PROFILES = {
     GPU.RTX3060: dict(batch_size=1,  grad_accum=16, bf16=False, fp16=True,  workers=4, save_steps=100, save_total_limit=5),
     GPU.T4:      dict(batch_size=8,  grad_accum=8,  bf16=False, fp16=True,  workers=2, save_steps=100, save_total_limit=5),
-    GPU.A100:    dict(batch_size=32, grad_accum=2,  bf16=True,  fp16=False, workers=8, save_steps=500, save_total_limit=30),
+    GPU.A100:    dict(batch_size=16, grad_accum=2,  bf16=True,  fp16=False, workers=8, save_steps=500, save_total_limit=30),
     GPU.H100:    dict(batch_size=48, grad_accum=2,  bf16=True,  fp16=False, workers=8, save_steps=500, save_total_limit=30),
 }
 
