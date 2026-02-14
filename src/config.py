@@ -10,10 +10,10 @@ class GPU(Enum):
 
 # batch_size, grad_accum, bf16, fp16, dataloader_num_workers, save_steps, save_total_limit
 _GPU_PROFILES = {
-    GPU.RTX3060: dict(batch_size=4,  grad_accum=16, bf16=False, fp16=True,  workers=4, save_steps=100, save_total_limit=5),
+    GPU.RTX3060: dict(batch_size=1,  grad_accum=16, bf16=False, fp16=True,  workers=4, save_steps=100, save_total_limit=5),
     GPU.T4:      dict(batch_size=8,  grad_accum=8,  bf16=False, fp16=True,  workers=2, save_steps=100, save_total_limit=5),
-    GPU.A100:    dict(batch_size=32, grad_accum=2,  bf16=True,  fp16=False, workers=8, save_steps=200, save_total_limit=30),
-    GPU.H100:    dict(batch_size=48, grad_accum=2,  bf16=True,  fp16=False, workers=8, save_steps=200, save_total_limit=30),
+    GPU.A100:    dict(batch_size=32, grad_accum=2,  bf16=True,  fp16=False, workers=8, save_steps=500, save_total_limit=30),
+    GPU.H100:    dict(batch_size=48, grad_accum=2,  bf16=True,  fp16=False, workers=8, save_steps=500, save_total_limit=30),
 }
 
 
@@ -21,7 +21,7 @@ _GPU_PROFILES = {
 class TrainConfig:
     # --- GPU Profile ---
     # Change this one line to switch between environments
-    gpu: GPU = GPU.A100
+    gpu: GPU = GPU.RTX3060
 
     # --- Paths ---
     model_dir: str = "./pretrained_models"
@@ -46,7 +46,8 @@ class TrainConfig:
     # --- Hyperparameters (GPU-independent) ---
     learning_rate: float = 5e-6
     num_epochs: int = 30
-    eval_split: float = 0.05
+    eval_split: float = 0.01
+    eval_steps: int = 1000
 
     # --- Constraints ---
     start_text_token: int = 255

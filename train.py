@@ -169,7 +169,7 @@ def main():
         gradient_checkpointing=True, # This setting theoretically reduces VRAM usage by 60%.
         lr_scheduler_type="cosine",
         eval_strategy="steps",
-        eval_steps=cfg.save_steps,
+        eval_steps=cfg.eval_steps,
         per_device_eval_batch_size=cfg.batch_size,
     )
 
