@@ -79,29 +79,32 @@ def preprocess_dataset_json_based(config, tts_engine: ChatterboxTTS):
                 resampler = torchaudio.transforms.Resample(sr, S3_SR)
                 wav = resampler(wav)
             
-            wav = wav.to(device)
-            
             with torch.no_grad():
 
-                wav_np = wav.cpu().squeeze().numpy()
+                wav_np = wav.squeeze().numpy()
                 spk_emb_np = tts_engine.ve.embeds_from_wavs([wav_np], sample_rate=S3_SR)
                 speaker_emb = torch.from_numpy(spk_emb_np[0]).cpu()
-                
-                s_tokens, _ = tts_engine.s3gen.tokenizer(wav.unsqueeze(0))
+
+                # Tokenize on GPU
+                wav_gpu = wav.to(device)
+                s_tokens, _ = tts_engine.s3gen.tokenizer(wav_gpu.unsqueeze(0))
                 raw_speech_tokens = s_tokens.squeeze().cpu()
-                
+
                 stop_speech_tensor = torch.tensor([SPEECH_STOP_ID], dtype=raw_speech_tokens.dtype)
                 speech_tokens = torch.cat([raw_speech_tokens, stop_speech_tensor], dim=0)
-                
-                
+
+
                 prompt_samples = int(config.prompt_duration * S3_SR)
                 if wav.shape[1] < prompt_samples:
                     prompt_wav = torch.nn.functional.pad(wav, (0, prompt_samples - wav.shape[1]))
                 else:
                     prompt_wav = wav[:, :prompt_samples]
-                
-                p_tokens, _ = tts_engine.s3gen.tokenizer(prompt_wav.unsqueeze(0))
+
+                p_tokens, _ = tts_engine.s3gen.tokenizer(prompt_wav.to(device).unsqueeze(0))
                 prompt_tokens = p_tokens.squeeze().cpu()
+
+                del wav_gpu
+                torch.cuda.empty_cache()
             
             clean_text = punc_norm(raw_text)
             
