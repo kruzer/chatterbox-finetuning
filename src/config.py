@@ -19,9 +19,8 @@ _GPU_PROFILES = {
 
 @dataclass
 class TrainConfig:
-    # --- GPU Profile ---
-    # Change this one line to switch between environments
-    gpu: GPU = GPU.RTX3060
+    # --- GPU Profile (required, set via --gpu CLI arg) ---
+    gpu: GPU = field(default=GPU.RTX3060)
 
     # --- Paths ---
     model_dir: str = "./pretrained_models"
@@ -44,10 +43,10 @@ class TrainConfig:
     new_vocab_size: int = 50276 if is_turbo else 2454
 
     # --- Hyperparameters (GPU-independent) ---
-    learning_rate: float = 5e-6
-    num_epochs: int = 30
+    learning_rate: float = 2e-5
+    num_epochs: int = 5
     eval_split: float = 0.01
-    eval_steps: int = 1000
+    eval_steps: int = 500
 
     # --- Constraints ---
     start_text_token: int = 255

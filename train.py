@@ -1,3 +1,4 @@
+import argparse
 import os
 import sys
 import torch
@@ -13,7 +14,7 @@ def _torch_load_compat(f, *args, **kwargs):
     return _orig_torch_load(f, *args, **kwargs)
 torch.load = _torch_load_compat
 
-from src.config import TrainConfig
+from src.config import TrainConfig, GPU
 from src.dataset import ChatterboxDataset, data_collator
 from src.model import resize_and_load_t3_weights, ChatterboxTrainerWrapper
 from src.preprocess_ljspeech import preprocess_dataset_ljspeech
@@ -32,9 +33,19 @@ os.environ["TOKENIZERS_PARALLELISM"] = "false"
 logger = setup_logger("ChatterboxFinetune")
 
 
+def parse_args():
+    parser = argparse.ArgumentParser(description="Chatterbox TTS fine-tuning")
+    parser.add_argument(
+        "--gpu", type=str, required=True,
+        choices=[g.value for g in GPU],
+        help="GPU profile to use (required): rtx3060, t4, a100, h100",
+    )
+    return parser.parse_args()
+
+
 def main():
-    
-    cfg = TrainConfig()
+    args = parse_args()
+    cfg = TrainConfig(gpu=GPU(args.gpu))
     
     logger.info("--- Starting Chatterbox Finetuning ---")
     logger.info(f"Mode: {'CHATTERBOX-TURBO' if cfg.is_turbo else 'CHATTERBOX-TTS'}")
